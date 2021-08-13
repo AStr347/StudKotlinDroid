@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="hollow_world">*(!Hollow World!)*</string>
+    <string name="title_activity_composed_uiactivity">ComposedUIActivity</string>
+    <string name="title_activity_cheese">Cheese</string>
+    <string name="title_activity_numbers_list_composed">NumbersListComposed</string>
+</resources>
