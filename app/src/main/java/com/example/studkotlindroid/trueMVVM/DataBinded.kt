@@ -2,6 +2,8 @@ package com.example.studkotlindroid.trueMVVM
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.ScrollView
+import android.widget.TextView
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
 import studkotlindroid.R

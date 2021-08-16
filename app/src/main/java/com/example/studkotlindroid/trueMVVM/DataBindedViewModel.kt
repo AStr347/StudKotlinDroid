@@ -1,5 +1,6 @@
 package com.example.studkotlindroid.trueMVVM
 
+import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
@@ -10,27 +11,27 @@ class DataBindedViewModel : ViewModel() {
 
     val user : LiveData<User> = _user
 
-    val popular : LiveData<Popular> = Transformations.map(user) {
-        when {
-            it.likes > 9 -> Popular.STAR
-            it.likes > 4 -> Popular.POPULAR
-            else -> Popular.NORMAL
-        }
-    }
-
     val isAdult : LiveData<String> = Transformations.map(user) {
         if(it.isAdult){
             "Adult"
         } else {
-            "Near 18"
+            "Less 18"
         }
     }
 
-    fun onLike(){
-        val value = _user.value
-        if(value != null){
-            value.likes++
-            _user.value = value
+    fun onInc(view : View){
+        var user = _user.value
+        if(user != null) {
+            user.age++;
+            _user.value = user
+        }
+    }
+
+    fun onDec(view : View){
+        var user = _user.value
+        if(user != null) {
+            user.age--;
+            _user.value = user
         }
     }
 }
