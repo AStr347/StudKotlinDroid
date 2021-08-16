@@ -10,11 +10,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,16 +38,26 @@ class NumbersListComposed : ComponentActivity() {
 }
 
 @Composable
-fun MainBody(vm: NumbersListViewModel = NumbersListViewModel()) {
+fun MainBody(vm: NumbersListViewModel = NumbersListViewModel.instant) {
     TitlesWithList(vm)
     /* todo: must be slide out screen or always some ander list */
-    Button(onClick = { /* todo: dialog for add new PhoneNumber */ },
+    Button(
+        onClick = { vm.onOpenAddDialog() },
         shape = CircleShape,
         modifier= Modifier
             .size(50.dp)
-            .offset(x = 330.dp, y = 770.dp)
+            .offset(x = 330.dp, y = 730.dp)
     ) {
-        Text(text = "+", fontSize = 20.sp)
+        Text(
+            text = "+",
+            fontSize = 20.sp
+        )
+    }
+    /* that func draw dialog */
+    if(vm.openAddDialog.collectAsState().value){
+        AddNumberDialog(vm)
+    } else if (vm.openEditDialog.collectAsState().value){
+        EditNumberDialog(vm)
     }
 }
 
@@ -59,8 +66,7 @@ fun MainBody(vm: NumbersListViewModel = NumbersListViewModel()) {
 fun TitlesWithList(vm: NumbersListViewModel){
     val titleWithNumbers = vm.list.collectAsState().value
     LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(10.dp)
     ) {
         for ((t, numbers) in titleWithNumbers) {
@@ -68,7 +74,7 @@ fun TitlesWithList(vm: NumbersListViewModel){
                 Header(t.toString())
             }
             items(numbers) { item ->
-                NumberRow(item)
+                NumberRow(vm, item)
             }
         }
     }
@@ -81,7 +87,8 @@ fun Header(text:String){
         color = Color(R.color.lightBlueText),
         fontSize = 20.sp
     )
-    Text(text = text,
+    Text(
+        text = text,
         style = headerStyle,
         modifier = Modifier
             .fillMaxWidth()
@@ -90,29 +97,105 @@ fun Header(text:String){
 }
 
 @Composable
-fun NumberRow(pn : PhoneNumber){
-    /* todo: pressing for edit number object */
-    Row (verticalAlignment = Alignment.CenterVertically,
+fun NumberRow(vm: NumbersListViewModel, pn : PhoneNumber){
+    Row (
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.pointerInput(pn){
             detectTapGestures(
-                onPress = { /* todo: dialog for edit PhoneNumber */ },
+                onLongPress = { vm.onOpenEditDialog(pn); },
             )
         }
     ) {
-        Image(painter = painterResource(id = pn.imgId),
+        Image(
+            painter = painterResource(id = pn.imgId),
             contentDescription = null,
-            modifier = Modifier
-                .size(width = 40.dp, height = 40.dp)
+            modifier = Modifier.size(width = 40.dp, height = 40.dp)
         )
-        Text(text = pn.Name,
+        Text(
+            text = pn.Name,
             modifier = Modifier.width(100.dp)
         )
         Spacer(modifier = Modifier.width(40.dp))
-        Text(text = pn.Number,
+        Text(
+            text = pn.Number,
             modifier = Modifier.fillMaxWidth()
         )
     }
 }
+
+
+
+@Composable
+fun AddNumberDialog(vm: NumbersListViewModel){
+    var name by remember { mutableStateOf("") }
+    var number by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = { vm.onOpenAddDialog() },
+        title = { Text(text = "Add Number")},
+        text = {
+            Column() {
+                TextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = {Text(text = "Name")}
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+                TextField(
+                    value = number,
+                    onValueChange = { number = it },
+                    label = {Text(text = "Number")}
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = { vm.onAdd(PhoneNumber(name, number)) }) {
+                Text(text = "Add")
+            }
+        },
+        dismissButton = {},
+    )
+}
+
+
+@Composable
+fun EditNumberDialog(vm: NumbersListViewModel){
+    val titleWithNumbers = vm.list.collectAsState().value.flatMap { it.value }
+    val pn = titleWithNumbers[vm.editIndex]
+    var name by remember { mutableStateOf(pn.Name) }
+    var number by remember { mutableStateOf(pn.Number) }
+    AlertDialog(
+        onDismissRequest = { vm.onOpenEditDialog() },
+        title = { Text(text = "Add Number")},
+        text = {
+            Column() {
+                TextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = {Text(text = "Name")}
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+                TextField(
+                    value = number,
+                    onValueChange = { number = it },
+                    label = {Text(text = "Number")}
+                )
+            }
+        },
+        confirmButton = {
+            Row() {
+                Button(onClick = { vm.onEdit(PhoneNumber(name, number)) }) {
+                    Text(text = "Edit")
+                }
+                Spacer(modifier = Modifier.width(20.dp))
+                Button(onClick = { vm.onDel(pn) }) {
+                    Text(text = "Del")
+                }
+            }
+        },
+        dismissButton = {},
+    )
+}
+
 
 @Preview(showBackground = true)
 @Composable
